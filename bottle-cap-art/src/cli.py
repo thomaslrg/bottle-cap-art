@@ -58,7 +58,7 @@ def main():
 
     # ===== args.nb_rotations =====
     if args.nb_rotations is None:
-        args.nb_rotations = 8
+        args.nb_rotations = 4
 
     # ===== args.nb_caps_cols =====
     if args.nb_caps_cols is None:
