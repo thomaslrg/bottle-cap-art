@@ -9,12 +9,12 @@ with st.sidebar:
     count_limit = st.checkbox(
         label="Je veux prendre en compte le nombre de capsules dans le dataset",
         help="Si tu coches cette case, l'image générée n'utiliseras pas plus de capsules que ce que tu as en stock",
-        value=True,
+        value=False,
     )
     nb_rotations = st.number_input(
         label="Nombre de rotations à essayer pour chaque position de chaque capsule",
         help="Plus tu mets un grand nombre, plus l'image sera longue à générer",
-        value=4,
+        value=1,
     )
     nb_caps_cols = st.number_input(
         label="Nombre de capsules que tu veux mettres pour faire la largeur de l'image",
@@ -33,11 +33,13 @@ with st.sidebar:
             label="Noise",
             value=100,
         )
+    st.success("Tout va être calculé à partir des algorithmes de Samuel")
 
 st.title("Bottle cap art")
 
 uploaded_file = st.file_uploader(
-    "Choisi une image à transformer", accept_multiple_files=False
+    "Choisi une image, clique sur le bouton et regarde le résultat",
+    accept_multiple_files=False
 )
 
 if uploaded_file is not None:
