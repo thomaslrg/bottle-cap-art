@@ -9,6 +9,7 @@ import os
 from PIL import Image
 from sklearn.neighbors import NearestNeighbors
 from typing import Tuple, List
+from collections import Counter
 
 
 def patch_to_capsule_classifier(
@@ -182,7 +183,7 @@ def generate_image(
     mode: str,
     noise: int,
     from_streamlit: bool = False,
-) -> np.ndarray:
+) -> Tuple[np.ndarray, List[int]]:
     """Generate a capsule version of the input image.
 
     Uses the capsule dataset and positions them to reproduce the original image
@@ -199,6 +200,7 @@ def generate_image(
 
     Returns:
         np.ndarray: generated image
+        List[int]: list of capsule ids
     """
 
     # Load input image
@@ -210,15 +212,10 @@ def generate_image(
 
     # Load dataset images
     images_dir_path = "data/my_caps/"
-    images_path_list = os.listdir(images_dir_path)
+    images_path_list = []
     for identifier in dataset.index:
-        if str(identifier) + ".png" not in images_path_list:
-            print(
-                f"Warining: {images_dir_path} does not contain the image {identifier}.png"
-            )
-    images_path_list = [
-        os.path.join(images_dir_path, image) for image in images_path_list
-    ]
+        assert os.path.exists(os.path.join(images_dir_path, str(identifier) + ".png"))
+        images_path_list.append(os.path.join(images_dir_path, str(identifier) + ".png"))
 
     # Load classifier
     caps_diameter = int(image_width / (3**0.5 * (nb_caps_cols - 1) + 1))
@@ -332,6 +329,21 @@ def generate_image(
 
     display_text("Et voilà !", for_streamlit=from_streamlit)
 
-    # Return image
+    # Output image
     capsule_image[capsule_image > 1] = 1
-    return Image.fromarray((capsule_image * 255).astype("uint8"))
+    output_image = Image.fromarray((capsule_image * 255).astype("uint8"))
+
+    # Create dataframe of capsule images and their occurences
+    counter = Counter(liste)
+    df_caps = pd.DataFrame.from_dict(counter, orient="index").reset_index()
+    df_caps = df_caps.rename(columns={"index": "Image de la capsule", 0: "Nombre de fois utilisée"})
+    df_caps = df_caps.sort_values(by="Nombre de fois utilisée", ascending=False)
+    df_caps = df_caps[df_caps["Image de la capsule"] != -1]
+    df_caps_html = df_caps.to_html(
+        index=False,
+        escape=False,
+        formatters={"Image de la capsule": lambda x: f"<img src='https://raw.githubusercontent.com/thomaslrg/bottle-cap-art/main/data/my_caps/{x}.png' width='80px'>"},
+    )
+
+    # Return output image and list of capsules
+    return output_image, df_caps_html

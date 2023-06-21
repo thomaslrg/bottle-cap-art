@@ -42,22 +42,26 @@ uploaded_file = st.file_uploader(
     accept_multiple_files=False
 )
 
-if uploaded_file is not None:
-    input_img = Image.open(uploaded_file)
-    with st.expander("Ton image", expanded=True):
-        st.image(input_img, use_column_width=True)
+if uploaded_file is None:
+    st.stop()
 
-    button = st.button("Générer une version en capsules")
-    if button:
-        output_img = generate_image(
-            input_img=input_img,
-            nb_rotations=nb_rotations,
-            nb_caps_cols=nb_caps_cols,
-            image_width=image_width,
-            count_limit=count_limit,
-            mode=mode,
-            noise=noise if mode == "Depuis le centre" else None,
-            from_streamlit=True,
-        )
-        with st.expander("Ton image en capsules", expanded=True):
-            st.image(output_img, use_column_width=True)
+input_img = Image.open(uploaded_file)
+with st.expander("Ton image", expanded=True):
+    st.image(input_img, use_column_width=True)
+
+button = st.button("Générer une version en capsules")
+if button:
+    output_img, df_caps_html = generate_image(
+        input_img=input_img,
+        nb_rotations=nb_rotations,
+        nb_caps_cols=nb_caps_cols,
+        image_width=image_width,
+        count_limit=count_limit,
+        mode=mode,
+        noise=noise if mode == "Depuis le centre" else None,
+        from_streamlit=True,
+    )
+    with st.expander("Ton image en capsules", expanded=True):
+        st.image(output_img, use_column_width=True)
+    with st.expander("Liste des capsules", expanded=True):
+        st.markdown(df_caps_html, unsafe_allow_html=True)
